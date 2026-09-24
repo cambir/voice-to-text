@@ -1,0 +1,6 @@
+apiVersion: v2
+name: wyoming-whisper
+description: Wyoming protocol STT (faster-whisper, CPU-only) for the voice-assistant stack
+type: application
+version: 0.1.0
+appVersion: "latest"

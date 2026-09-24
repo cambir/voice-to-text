@@ -1,0 +1,40 @@
+image:
+  # Note: the published Docker Hub image is rhasspy/wyoming-whisper, even
+  # though the upstream GitHub repo is named wyoming-faster-whisper.
+  repository: rhasspy/wyoming-whisper
+  # "latest" moves; check hub.docker.com/r/rhasspy/wyoming-whisper/tags
+  # and pin an explicit tag before this goes anywhere near production.
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 10300
+  metallbPool: default-pool
+  # loadBalancerIP: 10.20.0.202
+
+# CPU-only inference (no Metal/GPU on the Ubuntu Mac minis). tiny-int8 is
+# the fastest/lowest-accuracy option; step up to base-int8 or small-int8
+# if latency budget allows and accuracy needs it.
+model: tiny-int8
+language: en
+extraArgs: []
+
+# Model cache so tiny-int8 etc. aren't re-downloaded from Hugging Face on
+# every pod restart. Uses the nfs-client StorageClass from infra/nfs-provisioner.
+# Set persistence.enabled=false to fall back to emptyDir (simpler, but
+# re-downloads models each restart).
+persistence:
+  enabled: true
+  storageClassName: nfs-client
+  size: 2Gi
+  accessModes:
+    - ReadWriteOnce
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 1536Mi

@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: wyoming-whisper
+  namespace: wyoming-whisper
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: ./apps/wyoming-whisper/chart
+      sourceRef:
+        kind: GitRepository
+        name: my-apps
+        namespace: flux-system
+      reconcileStrategy: Revision
+  values:
+    service:
+      # Pinned to the address this Service already had under the old
+      # apps/voice-assistant layout, so the Mac dictation client's
+      # WHISPER_HOST doesn't need to change.
+      loadBalancerIP: 10.20.0.201

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-whisper
+  labels:
+    app.kubernetes.io/name: wyoming-whisper
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: wyoming-whisper
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: wyoming-whisper
+    spec:
+      containers:
+        - name: wyoming-whisper
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "--model"
+            - {{ .Values.model | quote }}
+            - "--language"
+            - {{ .Values.language | quote }}
+            - "--data-dir"
+            - "/data"
+            - "--download-dir"
+            - "/data"
+            {{- range .Values.extraArgs }}
+            - {{ . | quote }}
+            {{- end }}
+          ports:
+            - name: wyoming
+              containerPort: 10300
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: wyoming-whisper-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
